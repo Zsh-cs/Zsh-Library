@@ -1,0 +1,26 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: dev
+  datasource:
+    druid:
+      driver-class-name: ${zsh.datasource.driver-class-name}
+      url: jdbc:mysql://${zsh.datasource.host}:${zsh.datasource.port}/${zsh.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+      username: ${zsh.datasource.username}
+      password: ${zsh.datasource.password}
+
+mybatis-plus:
+  configuration:
+    # 开启驼峰命名自动映射
+    map-underscore-to-camel-case: true
+  type-aliases-package: com.zsh.entity
+
+logging:
+  level:
+    com:
+      zsh:
+        controller: info
+        service: info
+        mapper: debug

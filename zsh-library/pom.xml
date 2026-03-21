@@ -14,7 +14,7 @@
     <name>zsh-library</name>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
         <mybatisplus>3.5.11</mybatisplus>
         <druid>1.2.20</druid>
     </properties>
@@ -32,14 +32,13 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>druid-spring-boot-starter</artifactId>
+            <artifactId>druid-spring-boot-3-starter</artifactId>
             <version>${druid}</version>
         </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
