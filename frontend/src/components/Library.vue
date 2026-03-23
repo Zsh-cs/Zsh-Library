@@ -2,13 +2,15 @@
 // reative用来存一组相关联的数据，比如书名和作者
 // ref用来存简单的东西，比如对话框显示或隐藏
 // ElMessage用于在全局方位显示消息提示，例如操作成功、警告或错误通知
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { addBook } from '@/api/book'
+import { addBook, listBooks } from '@/api/book'
 
 const dialogVisible = ref(false)// 控制弹窗是否显示的开关，初始是关闭的
 const formRef = ref()
 const submitting = ref(false)
+const books = ref([])
+const tableLoading = ref(false)
 
 // form是一个响应式对象，里面存着用户输入的书名和作者
 const form = reactive({
@@ -80,7 +82,44 @@ function handleCancel() {
   resetForm()
 }
 
-// 处理确认操作;async用于声明异步函数，让函数内部可以使用await来等待Promise完成
+function normalizeBook(raw = {}) {
+  return {
+    title: raw.title,
+    author: raw.author,
+    isbn: raw.isbn,
+    description: raw.description,
+    publisher: raw.publisher,
+    publishDate: raw.publishDate,
+    price: raw.price
+  }
+}
+
+async function fetchBooks() {
+  try {
+    tableLoading.value = true
+    const res = await listBooks()
+    const list = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : []
+    books.value = list.map(normalizeBook)
+  } catch (error) {
+    ElMessage.error(`图书列表加载失败：${error.message || '请稍后重试'}`)
+  } finally {
+    tableLoading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchBooks()
+})
+
+function handleEdit(row) {
+  ElMessage.info(`编辑功能开发中：${row.title || row.bookName || '未命名图书'}`)
+}
+
+function handleDelete(row) {
+  ElMessage.info(`删除功能开发中：${row.title || row.bookName || '未命名图书'}`)
+}
+
+// 处理确认操作：async用于声明异步函数，让函数内部可以使用await来等待Promise完成
 async function handleConfirm() {
 
   // 检查表单引用是否存在，并防止重复提交
@@ -103,6 +142,8 @@ async function handleConfirm() {
   try {
     submitting.value = true
     await addBook(payload)// 使用await等待addBook(payload)这一异步操作完成
+    await fetchBooks()
+
     ElMessage.success(`已新增图书：${form.title}`)
     dialogVisible.value = false
     resetForm()
@@ -177,12 +218,34 @@ async function handleConfirm() {
         <el-button type="primary" :loading="submitting" @click="handleConfirm">确认</el-button>
       </template>
     </el-dialog>
+
+    <section class="book-table-wrap">
+      <el-table v-loading="tableLoading" :data="books" border stripe style="width: 100%">
+        <el-table-column prop="title" label="书名" min-width="140" />
+        <el-table-column prop="author" label="标题" min-width="140" />
+        <el-table-column prop="isbn" label="ISBN" min-width="160" />
+        <el-table-column prop="description" label="简介" min-width="220" show-overflow-tooltip />
+        <el-table-column prop="publisher" label="出版社" min-width="140" />
+        <el-table-column prop="publishDate" label="出版日期" min-width="130" />
+        <el-table-column prop="price" label="定价" min-width="110" align="right" header-align="center">
+          <template #default="scope">
+            {{ Number(scope.row.price || 0).toFixed(2) }} 元
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="120" align="center" fixed="right">
+          <template #default="scope">
+            <el-button type="primary" link @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button type="danger" link @click="handleDelete(scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </section>
   </section>
 </template>
 
 <style scoped>
 .book-page {
-  max-width: 1080px;
+  max-width: 1200px;
   margin: 36px auto;
   padding: 0 18px;
 }
@@ -205,5 +268,9 @@ async function handleConfirm() {
   line-height: 1.2;
   color: #1f2937;
   text-align: center;
+}
+
+.book-table-wrap {
+  margin-top: 28px;
 }
 </style>

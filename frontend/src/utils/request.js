@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const request = axios.create({
   baseURL: '/api',// baseURL必须配置，后面可以在vite.config.js中去除掉'/api'
-  timeout: 10000
+  timeout: 5000
 })
 
 request.interceptors.response.use(
